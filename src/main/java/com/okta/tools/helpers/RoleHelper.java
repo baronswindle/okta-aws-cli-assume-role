@@ -26,14 +26,12 @@ import com.okta.tools.OktaAwsCliEnvironment;
 import com.okta.tools.models.AccountOption;
 import com.okta.tools.models.RoleOption;
 import com.okta.tools.saml.AwsSamlRoleUtils;
-import com.okta.tools.saml.AwsSamlSigninParser;
-import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class RoleHelper {
 
@@ -119,17 +117,28 @@ public class RoleHelper {
 
     public List<AccountOption> getAvailableRoles(String samlResponse) throws IOException {
         Map<String, String> roles = AwsSamlRoleUtils.getRoles(samlResponse);
-        if (roles.size() == 1) {
-            String roleArn = roles.values().iterator().next();
-            return Collections.singletonList(
-                    new AccountOption("Account:  (" + roleArn.substring("arn:aws:iam::".length(), "arn:aws:iam::".length() + 12) + ")",
-                            Collections.singletonList(
-                                    new RoleOption(roleArn.substring(roleArn.indexOf(":role/") + ":role/".length()), roleArn)
-                            )
-                    )
+        Map<String, List<String>> accounts = roles
+            .keySet()
+            .stream()
+            .collect(
+                Collectors.groupingBy(
+                    roleArn -> roleArn.substring("arn:aws:iam::".length(), "arn:aws:iam::".length() + 12)
+                )
+            );
+        List<AccountOption> options = new ArrayList<AccountOption>();
+        for (Map.Entry<String, List<String>>entry : accounts.entrySet()) {
+            String accountId = entry.getKey();
+            List<String> accountRoles = entry.getValue();
+            options.add(
+                new AccountOption(
+                    "Account:  (" + accountId + ")",
+                    accountRoles
+                        .stream()
+                        .map(roleArn -> new RoleOption(roleArn.substring(roleArn.indexOf(":role/") + ":role/".length()), roleArn))
+                        .collect(Collectors.toList())
+                )
             );
         }
-        Document document = AwsSamlRoleUtils.getSigninPageDocument(samlResponse);
-        return AwsSamlSigninParser.parseAccountOptions(document);
+        return options;
     }
 }

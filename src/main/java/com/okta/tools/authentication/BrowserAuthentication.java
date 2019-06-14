@@ -128,7 +128,7 @@ public final class BrowserAuthentication extends Application {
                 Node formActionAttribute = formAttributes.getNamedItem("action");
                 if (formActionAttribute != null) {
                     String formAction = formActionAttribute.getTextContent();
-                    if ("https://signin.aws.amazon.com/saml".equals(formAction)) {
+                    if ("/saml".equals(formAction)) {
                         return form;
                     }
                 }
