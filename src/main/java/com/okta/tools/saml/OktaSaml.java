@@ -82,18 +82,24 @@ public class OktaSaml {
     }
 
     public static final class PromptForReAuthenticationException extends IllegalStateException {
+        private static final long serialVersionUID = -5978107665307721241L;
+
         public PromptForReAuthenticationException(String message) {
             super(message);
         }
     }
 
     public static final class PromptForFactorException extends IllegalStateException {
+        private static final long serialVersionUID = -8577319243489077983L;
+
         public PromptForFactorException(String message) {
             super(message);
         }
     }
 
     public static final class PromptForCredentialsException extends IllegalStateException {
+        private static final long serialVersionUID = 2699262307042507667L;
+
         public PromptForCredentialsException(String message) {
             super(message);
         }
