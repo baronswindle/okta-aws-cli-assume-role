@@ -115,30 +115,31 @@ public class OktaMFA {
      */
     private static String questionFactor(JSONObject factor, String stateToken) throws IOException, InterruptedException {
         String question = factor.getJSONObject("profile").getString("questionText");
-        Scanner scanner = new Scanner(System.in);
-        String sessionToken = "";
-        String answer = "";
+        try (Scanner scanner = new Scanner(System.in)) {
+            String sessionToken = "";
+            String answer = "";
 
-        // Prompt the user for the Security Question Answer
-        System.err.println("\nSecurity Question Factor Authentication\nEnter 'change factor' to use a different factor\n");
-        while ("".equals(sessionToken)) {
-            if (!"".equals(answer)) {
-                System.err.println("Incorrect answer, please try again");
+            // Prompt the user for the Security Question Answer
+            System.err.println("\nSecurity Question Factor Authentication\nEnter 'change factor' to use a different factor\n");
+            while ("".equals(sessionToken)) {
+                if (!"".equals(answer)) {
+                    System.err.println("Incorrect answer, please try again");
+                }
+                System.err.println(question);
+                System.err.println("Answer: ");
+                answer = scanner.nextLine();
+
+                // Factor change requested
+                if (answer.equalsIgnoreCase(CHANGE_FACTOR)) {
+                    return answer;
+                }
+
+                // Verify the answer's validity
+                sessionToken = verifyAnswer(answer, factor, stateToken, FACTOR_TYPE_QUESTION);
             }
-            System.err.println(question);
-            System.err.println("Answer: ");
-            answer = scanner.nextLine();
 
-            // Factor change requested
-            if (answer.equalsIgnoreCase(CHANGE_FACTOR)) {
-                return answer;
-            }
-
-            // Verify the answer's validity
-            sessionToken = verifyAnswer(answer, factor, stateToken, FACTOR_TYPE_QUESTION);
+            return sessionToken;
         }
-
-        return sessionToken;
     }
 
     /**
@@ -152,40 +153,41 @@ public class OktaMFA {
      * @throws InterruptedException if the process is interrupted during the HTTP request
      */
     private static String smsFactor(JSONObject factor, String stateToken) throws IOException, InterruptedException {
-        Scanner scanner = new Scanner(System.in);
-        String answer = "";
-        String sessionToken = "";
+        try (Scanner scanner = new Scanner(System.in)) {
+            String answer = "";
+            String sessionToken = "";
 
-        System.err.println("\nSMS Factor Authentication \nEnter 'change factor' to use a different factor");
-        while ("".equals(sessionToken)) {
-            if (!"".equals(answer)) {
-                System.err.println("Incorrect passcode, please try again or type 'new code' to be sent a new SMS passcode");
-            } else {
-                // Send initial code to the user
-                verifyAnswer("", factor, stateToken, FACTOR_TYPE_SMS);
+            System.err.println("\nSMS Factor Authentication \nEnter 'change factor' to use a different factor");
+            while ("".equals(sessionToken)) {
+                if (!"".equals(answer)) {
+                    System.err.println("Incorrect passcode, please try again or type 'new code' to be sent a new SMS passcode");
+                } else {
+                    // Send initial code to the user
+                    verifyAnswer("", factor, stateToken, FACTOR_TYPE_SMS);
+                }
+
+                System.err.println("SMS Code: ");
+                answer = scanner.nextLine();
+
+                switch (answer.toLowerCase()) {
+                    case "new code":
+                        // New SMS passcode requested
+                        answer = "";
+                        System.err.println("New code sent! \n");
+                        break;
+                    case CHANGE_FACTOR:
+                        // Factor change requested
+                        return answer;
+                    default:
+                        break;
+                }
+
+                // Verify the validity of the SMS passcode
+                sessionToken = verifyAnswer(answer, factor, stateToken, FACTOR_TYPE_SMS);
             }
 
-            System.err.println("SMS Code: ");
-            answer = scanner.nextLine();
-
-            switch (answer.toLowerCase()) {
-                case "new code":
-                    // New SMS passcode requested
-                    answer = "";
-                    System.err.println("New code sent! \n");
-                    break;
-                case CHANGE_FACTOR:
-                    // Factor change requested
-                    return answer;
-                default:
-                    break;
-            }
-
-            // Verify the validity of the SMS passcode
-            sessionToken = verifyAnswer(answer, factor, stateToken, FACTOR_TYPE_SMS);
+            return sessionToken;
         }
-
-        return sessionToken;
     }
 
     /**
@@ -197,30 +199,31 @@ public class OktaMFA {
      * @throws IOException if a network or protocol error occurs
      */
     private static String totpFactor(JSONObject factor, String stateToken) throws IOException, InterruptedException {
-        Scanner scanner = new Scanner(System.in);
-        String sessionToken = "";
-        String answer = "";
+        try (Scanner scanner = new Scanner(System.in)) {
+            String sessionToken = "";
+            String answer = "";
 
-        // Prompt for token
-        System.err.println("\n" + factor.getString("provider") + " Token Factor Authentication\nEnter 'change factor' to use a different factor");
-        while ("".equals(sessionToken)) {
-            if (!"".equals(answer)) {
-                System.err.println("Invalid token, please try again");
+            // Prompt for token
+            System.err.println("\n" + factor.getString("provider") + " Token Factor Authentication\nEnter 'change factor' to use a different factor");
+            while ("".equals(sessionToken)) {
+                if (!"".equals(answer)) {
+                    System.err.println("Invalid token, please try again");
+                }
+
+                System.err.println("Token: ");
+                answer = scanner.nextLine();
+
+                // Factor change requested
+                if (answer.equalsIgnoreCase(CHANGE_FACTOR)) {
+                    return answer;
+                }
+
+                // Verify the validity of the token
+                sessionToken = verifyAnswer(answer, factor, stateToken, FACTOR_TYPE_TOKEN_SOFTWARE_TOTP);
             }
 
-            System.err.println("Token: ");
-            answer = scanner.nextLine();
-
-            // Factor change requested
-            if (answer.equalsIgnoreCase(CHANGE_FACTOR)) {
-                return answer;
-            }
-
-            // Verify the validity of the token
-            sessionToken = verifyAnswer(answer, factor, stateToken, FACTOR_TYPE_TOKEN_SOFTWARE_TOTP);
+            return sessionToken;
         }
-
-        return sessionToken;
     }
 
 
