@@ -19,7 +19,6 @@ import com.okta.tools.OktaAwsCliEnvironment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.logging.Logger;
 
 public class SubresourceIntegrityStrippingHack {
