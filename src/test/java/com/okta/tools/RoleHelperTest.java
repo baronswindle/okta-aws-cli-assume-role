@@ -17,12 +17,10 @@ package com.okta.tools;
 
 import com.okta.tools.helpers.RoleHelper;
 import com.okta.tools.models.AccountOption;
-import com.okta.tools.models.RoleOption;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RoleHelperTest {
@@ -34,10 +32,8 @@ class RoleHelperTest {
         OktaAwsCliEnvironment environment = new OktaAwsCliEnvironment(false, null, null, null, null, null, "https://acmecorp.oktapreview.com/home/amazon_aws/0oa5zrwfs815KJmVF0h7/137", null, 0, null, null, false);
         RoleHelper roleHelper = new RoleHelper(environment);
         List<AccountOption> availableRoles = roleHelper.getAvailableRoles(EXAMPLE_SAML_RESPONSE);
-        assertEquals(singletonList(
-                new AccountOption("Account:  (123456789012)", singletonList(
-                        new RoleOption("EC2Admins", "arn:aws:iam::123456789012:role/EC2Admins")
-                ))
-        ), availableRoles);
+        assertEquals(availableRoles.get(0).accountName, "Account:  (123456789012)");
+        assertEquals(availableRoles.get(0).roleOptions.get(0).roleArn, "arn:aws:iam::123456789012:role/EC2Admins");
+        assertEquals(availableRoles.get(0).roleOptions.get(0).roleName, "EC2Admins");
     }
 }
